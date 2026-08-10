@@ -38,14 +38,49 @@ Each page shows: a hero with flag, name, sub-region and coordinates; an indicato
 
 An overview page at `/countries` lists all 54 grouped by sub-region.
 
+## Tier classification
+
+Every country carries a tier badge, shown on its page, in search filters, and as a map legend in Explore:
+
+- **Elite** (~12.5%) — drives continental GDP, controls vital trade routes, or dominates a critical global mineral/energy supply chain. Seeded with South Africa, Nigeria, Egypt, Morocco (the "A7Nations" set, remaining members to be supplied).
+- **Standard** (~50%)
+- **Emerging** (~35%)
+
+Tier assignment is stored per country with an editable rationale line (e.g. "Africa's largest diversified economy; critical supplier of platinum, chromium and gold") and a headline export-value figure in USD.
+
+## geoNODE structure
+
+Each country page gains a "Node" section modelled on the supplied geoNODE format. Fields left blank when data is not yet supplied:
+
+- **Node ID / node type** (e.g. `Nigeria`, type `Country`), region link, capital link
+- **Primary exports** — top 5 by value, each linking to its commodity node
+- **SubNodes** — up to 15 ranked economic assets, each with its structured code and category, so they render as a typed list rather than free text. Categories: administrative region (`REG-`), state authority (`AUTH-`), port (`PORT-`), terminal (`TERM-`), mine (`MINE-`), canal (`CAN-`), pipeline (`PIPE-`), energy company (`ENGY-`), LNG facility (`LNG-`), chemical/fertiliser plant (`CHEM-`), automotive/aerospace cluster (`AUTO-`/`AERO-`), agri hub (`AGRI-`)
+- SubNodes with known coordinates appear as secondary pins on the country's map view; the rest render as a categorised asset table.
+
+## Commodity graph
+
+A parallel commodity layer (`comNODE`) with its own pages at `/commodity/{slug}`, seeded with the top 10 supplied (crude oil, natural gas & LNG, gold, copper, cocoa beans, platinum group metals, diamonds, iron ore, phosphates, cobalt) and structured to hold all 50:
+
+- HS4 code, category tag (energy, precious minerals, base metals, critical minerals, industrial minerals, agricultural products), African export value, global market value, Africa share %, estimated African reserves/production-potential value, YoY growth rate.
+- **Top 5 African exporters**, ranked — each a link to that country page.
+
+The link is bidirectional: a country page lists the commodities it exports (with its rank among African exporters), and a commodity page lists its top African exporters. Explore mode gains a commodity filter — pick a commodity and the map highlights only its exporting countries, graded by rank.
+
+Country and commodity rows the user has not yet supplied are created with the identifying fields filled and the metrics blank, ready to receive data later. Blank fields render as a muted "—" with a "data pending" affordance, never as zero.
+
+
 ## Data
 
-All 54 countries live in the Lovable Cloud database so the dataset can be edited and extended later.
+All data lives in the Lovable Cloud database so it can be edited and extended as you supply more.
 
-- `countries` table: slug, official name, common name, ISO codes, sub-region, centroid lat/lng, default map zoom, flag emoji, and all 13 indicators plus the structural parameter (value + label) and a `data_notes` field for caveats.
+- `countries` — slug, official name, common name, ISO codes, sub-region, centroid lat/lng, map zoom, flag emoji, tier, tier rationale, headline export value, capital, and all 13 indicators plus the structural parameter and a `data_notes` field.
+- `country_subnodes` — country, asset code, name, category, rank, optional lat/lng.
+- `commodities` — slug, name, HS4 code, category tags, African export value, global value, Africa share, reserves value, YoY growth.
+- `country_commodities` — join table giving each country's exported commodities and each commodity's ranked top African exporters.
 - Public read access only (anon SELECT); no user accounts in this build.
-- The migration includes literal INSERT rows for all 54 sovereign nations with best-available published estimates, so pages are populated the moment the app loads.
+- The migration includes literal INSERT rows for all 54 sovereign nations and the seeded commodities, with unsupplied metrics left NULL.
 - Indicator metadata (definition text shown in the UI) ships as a small typed constant in code.
+
 
 ## Design direction
 
