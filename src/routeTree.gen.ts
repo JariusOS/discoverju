@@ -14,6 +14,7 @@ import { Route as CommoditiesRouteImport } from './routes/commodities'
 import { Route as CountriesRouteImport } from './routes/countries'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as CommoditySlugRouteImport } from './routes/commodity.$slug'
 import { Route as CountrySlugRouteImport } from './routes/country.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,6 +42,11 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommoditySlugRoute = CommoditySlugRouteImport.update({
+  id: '/commodity/$slug',
+  path: '/commodity/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CountrySlugRoute = CountrySlugRouteImport.update({
   id: '/country/$slug',
   path: '/country/$slug',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
   '/search': typeof SearchRoute
+  '/commodity/$slug': typeof CommoditySlugRoute
   '/country/$slug': typeof CountrySlugRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
   '/search': typeof SearchRoute
+  '/commodity/$slug': typeof CommoditySlugRoute
   '/country/$slug': typeof CountrySlugRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
   '/search': typeof SearchRoute
+  '/commodity/$slug': typeof CommoditySlugRoute
   '/country/$slug': typeof CountrySlugRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +89,7 @@ export interface FileRouteTypes {
     | '/countries'
     | '/explore'
     | '/search'
+    | '/commodity/$slug'
     | '/country/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,6 +98,7 @@ export interface FileRouteTypes {
     | '/countries'
     | '/explore'
     | '/search'
+    | '/commodity/$slug'
     | '/country/$slug'
   id:
     | '__root__'
@@ -96,6 +107,7 @@ export interface FileRouteTypes {
     | '/countries'
     | '/explore'
     | '/search'
+    | '/commodity/$slug'
     | '/country/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -105,6 +117,7 @@ export interface RootRouteChildren {
   CountriesRoute: typeof CountriesRoute
   ExploreRoute: typeof ExploreRoute
   SearchRoute: typeof SearchRoute
+  CommoditySlugRoute: typeof CommoditySlugRoute
   CountrySlugRoute: typeof CountrySlugRoute
 }
 
@@ -145,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/commodity/$slug': {
+      id: '/commodity/$slug'
+      path: '/commodity/$slug'
+      fullPath: '/commodity/$slug'
+      preLoaderRoute: typeof CommoditySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/country/$slug': {
       id: '/country/$slug'
       path: '/country/$slug'
@@ -161,8 +181,19 @@ const rootRouteChildren: RootRouteChildren = {
   CountriesRoute: CountriesRoute,
   ExploreRoute: ExploreRoute,
   SearchRoute: SearchRoute,
+  CommoditySlugRoute: CommoditySlugRoute,
   CountrySlugRoute: CountrySlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
