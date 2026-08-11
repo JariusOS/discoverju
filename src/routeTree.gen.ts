@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CountriesRouteImport } from './routes/countries'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as CountrySlugRouteImport } from './routes/country.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CountrySlugRoute = CountrySlugRouteImport.update({
+  id: '/country/$slug',
+  path: '/country/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
   '/search': typeof SearchRoute
+  '/country/$slug': typeof CountrySlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
   '/search': typeof SearchRoute
+  '/country/$slug': typeof CountrySlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,15 @@ export interface FileRoutesById {
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
   '/search': typeof SearchRoute
+  '/country/$slug': typeof CountrySlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/countries' | '/explore' | '/search'
+  fullPaths: '/' | '/countries' | '/explore' | '/search' | '/country/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/countries' | '/explore' | '/search'
-  id: '__root__' | '/' | '/countries' | '/explore' | '/search'
+  to: '/' | '/countries' | '/explore' | '/search' | '/country/$slug'
+  id:
+    '__root__' | '/' | '/countries' | '/explore' | '/search' | '/country/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +77,7 @@ export interface RootRouteChildren {
   CountriesRoute: typeof CountriesRoute
   ExploreRoute: typeof ExploreRoute
   SearchRoute: typeof SearchRoute
+  CountrySlugRoute: typeof CountrySlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +110,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/country/$slug': {
+      id: '/country/$slug'
+      path: '/country/$slug'
+      fullPath: '/country/$slug'
+      preLoaderRoute: typeof CountrySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +125,7 @@ const rootRouteChildren: RootRouteChildren = {
   CountriesRoute: CountriesRoute,
   ExploreRoute: ExploreRoute,
   SearchRoute: SearchRoute,
+  CountrySlugRoute: CountrySlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

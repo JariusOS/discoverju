@@ -39,7 +39,7 @@ function Row({
 }: {
   label: string;
   value: string;
-  definition?: string;
+  definition?: string | undefined;
 }) {
   return (
     <div className="border-b border-border/60 py-4 last:border-0">
