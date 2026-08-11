@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CommoditiesRouteImport } from './routes/commodities'
 import { Route as CountriesRouteImport } from './routes/countries'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as SearchRouteImport } from './routes/search'
@@ -18,6 +19,11 @@ import { Route as CountrySlugRouteImport } from './routes/country.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommoditiesRoute = CommoditiesRouteImport.update({
+  id: '/commodities',
+  path: '/commodities',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CountriesRoute = CountriesRouteImport.update({
@@ -43,6 +49,7 @@ const CountrySlugRoute = CountrySlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/commodities': typeof CommoditiesRoute
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
   '/search': typeof SearchRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/commodities': typeof CommoditiesRoute
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
   '/search': typeof SearchRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/commodities': typeof CommoditiesRoute
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
   '/search': typeof SearchRoute
@@ -65,15 +74,34 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/countries' | '/explore' | '/search' | '/country/$slug'
+  fullPaths:
+    | '/'
+    | '/commodities'
+    | '/countries'
+    | '/explore'
+    | '/search'
+    | '/country/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/countries' | '/explore' | '/search' | '/country/$slug'
+  to:
+    | '/'
+    | '/commodities'
+    | '/countries'
+    | '/explore'
+    | '/search'
+    | '/country/$slug'
   id:
-    '__root__' | '/' | '/countries' | '/explore' | '/search' | '/country/$slug'
+    | '__root__'
+    | '/'
+    | '/commodities'
+    | '/countries'
+    | '/explore'
+    | '/search'
+    | '/country/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CommoditiesRoute: typeof CommoditiesRoute
   CountriesRoute: typeof CountriesRoute
   ExploreRoute: typeof ExploreRoute
   SearchRoute: typeof SearchRoute
@@ -87,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/commodities': {
+      id: '/commodities'
+      path: '/commodities'
+      fullPath: '/commodities'
+      preLoaderRoute: typeof CommoditiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/countries': {
@@ -122,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CommoditiesRoute: CommoditiesRoute,
   CountriesRoute: CountriesRoute,
   ExploreRoute: ExploreRoute,
   SearchRoute: SearchRoute,
