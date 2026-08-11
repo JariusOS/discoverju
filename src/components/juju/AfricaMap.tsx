@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { MAP_COLORS } from "./map-theme";
 import type { CountrySummary, SubNode } from "@/lib/juju-types";
 
-type AnyMap = Record<string, any>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyMap = any;
 
 let loadPromise: Promise<void> | null = null;
 
