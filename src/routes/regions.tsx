@@ -43,7 +43,8 @@ const BAR_CLASS: Record<Subregion, string> = {
   "Southern Africa": "bg-signal-magenta",
 };
 
-export default function noop() {}
+
+
 
 function RegionsScreen() {
   const { data: countries } = useSuspenseQuery(countriesQuery);
