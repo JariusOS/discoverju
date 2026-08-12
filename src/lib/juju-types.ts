@@ -82,7 +82,38 @@ export type CommoditySummary = {
   reserves_value_usd: number | null;
   reserves_label: string | null;
   yoy_growth_pct: number | null;
+  growth_note: string | null;
 };
+
+/** Category chip colors, keyed by the tag stored on each commodity. */
+export const CATEGORY_COLOR: Record<string, string> = {
+  Energy: "text-signal-amber",
+  "Precious Minerals": "text-elite",
+  "Critical Minerals": "text-signal-violet",
+  "Base Metals": "text-signal-cyan",
+  "Metal Commodities": "text-signal-cyan",
+  "Industrial Minerals": "text-signal-slate",
+  "Mineral Commodities": "text-signal-slate",
+  "Agricultural Products": "text-signal-green",
+  "Forest Products": "text-emerging",
+  "Marine Products": "text-standard",
+  "Chemical Commodity": "text-signal-magenta",
+  "Special Products": "text-signal-magenta",
+  "Food Security": "text-signal-green",
+};
+
+export const CATEGORY_ORDER: string[] = [
+  "Energy",
+  "Precious Minerals",
+  "Critical Minerals",
+  "Base Metals",
+  "Industrial Minerals",
+  "Agricultural Products",
+  "Forest Products",
+  "Marine Products",
+  "Chemical Commodity",
+  "Special Products",
+];
 
 export type CountryCommodityLink = {
   commodity: CommoditySummary;
