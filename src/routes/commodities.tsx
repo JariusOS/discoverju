@@ -85,7 +85,7 @@ function CommoditiesScreen() {
             ...presentCategories.map((c) => ({
               value: c,
               label: c.replace(" Products", "").replace(" Commodity", "").replace(" Minerals", ""),
-              dotClass: CATEGORY_COLOR[c],
+              dotClass: CATEGORY_COLOR[c] ?? "text-muted-foreground",
             })),
           ]}
           active={category}

@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CommoditiesRouteImport } from './routes/commodities'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CountriesRouteImport } from './routes/countries'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as IntelRouteImport } from './routes/intel'
 import { Route as RegionsRouteImport } from './routes/regions'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as CommoditySlugRouteImport } from './routes/commodity.$slug'
@@ -28,6 +30,11 @@ const CommoditiesRoute = CommoditiesRouteImport.update({
   path: '/commodities',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CountriesRoute = CountriesRouteImport.update({
   id: '/countries',
   path: '/countries',
@@ -36,6 +43,11 @@ const CountriesRoute = CountriesRouteImport.update({
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntelRoute = IntelRouteImport.update({
+  id: '/intel',
+  path: '/intel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegionsRoute = RegionsRouteImport.update({
@@ -62,8 +74,10 @@ const CountrySlugRoute = CountrySlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/commodities': typeof CommoditiesRoute
+  '/compare': typeof CompareRoute
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
+  '/intel': typeof IntelRoute
   '/regions': typeof RegionsRoute
   '/search': typeof SearchRoute
   '/commodity/$slug': typeof CommoditySlugRoute
@@ -72,8 +86,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/commodities': typeof CommoditiesRoute
+  '/compare': typeof CompareRoute
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
+  '/intel': typeof IntelRoute
   '/regions': typeof RegionsRoute
   '/search': typeof SearchRoute
   '/commodity/$slug': typeof CommoditySlugRoute
@@ -83,8 +99,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/commodities': typeof CommoditiesRoute
+  '/compare': typeof CompareRoute
   '/countries': typeof CountriesRoute
   '/explore': typeof ExploreRoute
+  '/intel': typeof IntelRoute
   '/regions': typeof RegionsRoute
   '/search': typeof SearchRoute
   '/commodity/$slug': typeof CommoditySlugRoute
@@ -95,8 +113,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/commodities'
+    | '/compare'
     | '/countries'
     | '/explore'
+    | '/intel'
     | '/regions'
     | '/search'
     | '/commodity/$slug'
@@ -105,8 +125,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/commodities'
+    | '/compare'
     | '/countries'
     | '/explore'
+    | '/intel'
     | '/regions'
     | '/search'
     | '/commodity/$slug'
@@ -115,8 +137,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/commodities'
+    | '/compare'
     | '/countries'
     | '/explore'
+    | '/intel'
     | '/regions'
     | '/search'
     | '/commodity/$slug'
@@ -126,8 +150,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CommoditiesRoute: typeof CommoditiesRoute
+  CompareRoute: typeof CompareRoute
   CountriesRoute: typeof CountriesRoute
   ExploreRoute: typeof ExploreRoute
+  IntelRoute: typeof IntelRoute
   RegionsRoute: typeof RegionsRoute
   SearchRoute: typeof SearchRoute
   CommoditySlugRoute: typeof CommoditySlugRoute
@@ -150,6 +176,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommoditiesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/countries': {
       id: '/countries'
       path: '/countries'
@@ -162,6 +195,13 @@ declare module '@tanstack/react-router' {
       path: '/explore'
       fullPath: '/explore'
       preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intel': {
+      id: '/intel'
+      path: '/intel'
+      fullPath: '/intel'
+      preLoaderRoute: typeof IntelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/regions': {
@@ -198,8 +238,10 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CommoditiesRoute: CommoditiesRoute,
+  CompareRoute: CompareRoute,
   CountriesRoute: CountriesRoute,
   ExploreRoute: ExploreRoute,
+  IntelRoute: IntelRoute,
   RegionsRoute: RegionsRoute,
   SearchRoute: SearchRoute,
   CommoditySlugRoute: CommoditySlugRoute,

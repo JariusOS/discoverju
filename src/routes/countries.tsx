@@ -75,7 +75,7 @@ function CountriesScreen() {
           className="mt-2.5"
           chips={[
             { value: "all", label: "All tiers" },
-            ...TIERS.map((t) => ({ value: t, label: TIER_LABEL[t], dotClass: TIER_DOT[t] })),
+            ...TIERS.map((t) => ({ value: t, label: TIER_LABEL[t], dotClass: TIER_DOT[t] ?? "text-muted-foreground" })),
           ]}
           active={tier}
           onChange={setTier}
@@ -106,7 +106,7 @@ function CountriesScreen() {
         {rows.map((country, i) => (
           <RecordRow
             key={country.slug}
-            dotClass={TIER_DOT[country.tier]}
+            dotClass={TIER_DOT[country.tier] ?? "text-muted-foreground"}
             title={`${country.flag_emoji ?? ""} ${country.common_name}`}
             meta={`${String(i + 1).padStart(2, "0")} · ${country.subregion} · ${country.capital_city ?? "—"}`}
             value={fmtMetric(metric, country[metric])}
