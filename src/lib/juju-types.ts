@@ -82,7 +82,38 @@ export type CommoditySummary = {
   reserves_value_usd: number | null;
   reserves_label: string | null;
   yoy_growth_pct: number | null;
+  growth_note: string | null;
 };
+
+/** Category chip colors, keyed by the tag stored on each commodity. */
+export const CATEGORY_COLOR: Record<string, string> = {
+  Energy: "text-signal-amber",
+  "Precious Minerals": "text-elite",
+  "Critical Minerals": "text-signal-violet",
+  "Base Metals": "text-signal-cyan",
+  "Metal Commodities": "text-signal-cyan",
+  "Industrial Minerals": "text-signal-slate",
+  "Mineral Commodities": "text-signal-slate",
+  "Agricultural Products": "text-signal-green",
+  "Forest Products": "text-emerging",
+  "Marine Products": "text-standard",
+  "Chemical Commodity": "text-signal-magenta",
+  "Special Products": "text-signal-magenta",
+  "Food Security": "text-signal-green",
+};
+
+export const CATEGORY_ORDER: string[] = [
+  "Energy",
+  "Precious Minerals",
+  "Critical Minerals",
+  "Base Metals",
+  "Industrial Minerals",
+  "Agricultural Products",
+  "Forest Products",
+  "Marine Products",
+  "Chemical Commodity",
+  "Special Products",
+];
 
 export type CountryCommodityLink = {
   commodity: CommoditySummary;
@@ -108,15 +139,27 @@ export type MetricKey =
   | "poverty_headcount_pct"
   | "adult_literacy_pct";
 
-export const METRICS: { key: MetricKey; label: string; unit: "usd" | "count" | "pct" | "years" }[] = [
-  { key: "gdp_per_capita_usd", label: "GDP per capita", unit: "usd" },
-  { key: "gdp_nominal_usd", label: "GDP (nominal)", unit: "usd" },
-  { key: "total_population", label: "Population", unit: "count" },
-  { key: "life_expectancy_years", label: "Life expectancy", unit: "years" },
-  { key: "minimum_wage_monthly_usd", label: "Minimum wage / month", unit: "usd" },
-  { key: "youth_under_30_pct", label: "Under 30", unit: "pct" },
-  { key: "poverty_headcount_pct", label: "Poverty headcount", unit: "pct" },
-  { key: "adult_literacy_pct", label: "Adult literacy", unit: "pct" },
+export const METRICS: {
+  key: MetricKey;
+  label: string;
+  unit: "usd" | "count" | "pct" | "years";
+  vintage: string;
+  higherIsBetter: boolean;
+}[] = [
+  { key: "gdp_per_capita_usd", label: "GDP per capita", unit: "usd", vintage: "2024", higherIsBetter: true },
+  { key: "gdp_nominal_usd", label: "GDP (nominal)", unit: "usd", vintage: "2024", higherIsBetter: true },
+  { key: "total_population", label: "Population", unit: "count", vintage: "2024", higherIsBetter: true },
+  { key: "life_expectancy_years", label: "Life expectancy", unit: "years", vintage: "2023", higherIsBetter: true },
+  {
+    key: "minimum_wage_monthly_usd",
+    label: "Minimum wage / month",
+    unit: "usd",
+    vintage: "2024",
+    higherIsBetter: true,
+  },
+  { key: "youth_under_30_pct", label: "Under 30", unit: "pct", vintage: "2023", higherIsBetter: true },
+  { key: "poverty_headcount_pct", label: "Poverty headcount", unit: "pct", vintage: "2022", higherIsBetter: false },
+  { key: "adult_literacy_pct", label: "Adult literacy", unit: "pct", vintage: "2022", higherIsBetter: true },
 ];
 
 export const INDICATOR_DEFINITIONS: Record<string, string> = {

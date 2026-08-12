@@ -1,0 +1,1 @@
+ALTER TABLE public.commodities ADD COLUMN IF NOT EXISTS growth_note text;

@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Juju Africa design system — editorial-cartographic.
- * Deep ink ground, ochre and terracotta earth pigments, hairline rules.
+ * Juju Africa design system — data terminal.
+ * Near-black surfaces, monospace type, hairline rules, signal accents.
  * All colors are oklch semantic tokens. Never hardcode colors in components.
  */
 
@@ -39,49 +39,64 @@
   --color-standard: var(--standard);
   --color-emerging: var(--emerging);
   --color-sand: var(--sand);
+  --color-signal-cyan: var(--signal-cyan);
+  --color-signal-violet: var(--signal-violet);
+  --color-signal-magenta: var(--signal-magenta);
+  --color-signal-green: var(--signal-green);
+  --color-signal-amber: var(--signal-amber);
+  --color-signal-red: var(--signal-red);
+  --color-signal-slate: var(--signal-slate);
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 }
 
 :root {
-  --radius: 0.25rem;
+  --radius: 0.125rem;
 
-  --background: oklch(0.17 0.017 265);
-  --foreground: oklch(0.95 0.008 85);
+  --background: oklch(0.145 0.004 265);
+  --foreground: oklch(0.97 0.003 265);
 
-  --card: oklch(0.21 0.018 265);
-  --card-foreground: oklch(0.95 0.008 85);
-  --popover: oklch(0.21 0.018 265);
-  --popover-foreground: oklch(0.95 0.008 85);
+  --card: oklch(0.185 0.005 265);
+  --card-foreground: oklch(0.97 0.003 265);
+  --popover: oklch(0.19 0.005 265);
+  --popover-foreground: oklch(0.97 0.003 265);
 
-  --primary: oklch(0.76 0.145 68);
-  --primary-foreground: oklch(0.19 0.02 265);
+  --primary: oklch(0.78 0.145 72);
+  --primary-foreground: oklch(0.17 0.01 265);
 
-  --secondary: oklch(0.26 0.022 265);
-  --secondary-foreground: oklch(0.93 0.01 85);
+  --secondary: oklch(0.235 0.005 265);
+  --secondary-foreground: oklch(0.95 0.003 265);
 
-  --muted: oklch(0.24 0.02 265);
-  --muted-foreground: oklch(0.68 0.02 80);
+  --muted: oklch(0.22 0.005 265);
+  --muted-foreground: oklch(0.66 0.006 265);
 
-  --accent: oklch(0.6 0.155 34);
-  --accent-foreground: oklch(0.97 0.01 85);
+  --accent: oklch(0.62 0.16 34);
+  --accent-foreground: oklch(0.97 0.005 265);
 
-  --destructive: oklch(0.58 0.19 26);
-  --destructive-foreground: oklch(0.97 0.01 85);
+  --destructive: oklch(0.6 0.19 26);
+  --destructive-foreground: oklch(0.97 0.005 265);
 
-  --border: oklch(0.31 0.02 265);
-  --hairline: oklch(0.36 0.02 265);
-  --input: oklch(0.31 0.02 265);
-  --ring: oklch(0.76 0.145 68);
+  --border: oklch(0.26 0.005 265);
+  --hairline: oklch(0.3 0.005 265);
+  --input: oklch(0.28 0.005 265);
+  --ring: oklch(0.78 0.145 72);
 
-  --elite: oklch(0.78 0.15 78);
-  --standard: oklch(0.66 0.1 200);
-  --emerging: oklch(0.68 0.13 150);
-  --sand: oklch(0.86 0.04 85);
+  --elite: oklch(0.82 0.15 82);
+  --standard: oklch(0.72 0.12 205);
+  --emerging: oklch(0.75 0.14 155);
+  --sand: oklch(0.88 0.03 85);
 
-  --font-display: "Fraunces", "Georgia", serif;
-  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --signal-cyan: oklch(0.78 0.13 200);
+  --signal-violet: oklch(0.7 0.14 300);
+  --signal-magenta: oklch(0.7 0.19 350);
+  --signal-green: oklch(0.76 0.16 155);
+  --signal-amber: oklch(0.82 0.15 82);
+  --signal-red: oklch(0.66 0.2 22);
+  --signal-slate: oklch(0.65 0.03 250);
+
+  --font-display: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: "IBM Plex Mono", ui-monospace, monospace;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
@@ -93,16 +108,16 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: var(--font-sans);
+    font-family: var(--font-mono);
     -webkit-font-smoothing: antialiased;
   }
 
   h1,
   h2,
   h3 {
-    font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: -0.015em;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    letter-spacing: -0.01em;
   }
 }
 
@@ -119,7 +134,24 @@
 @utility eyebrow {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-muted-foreground);
+}
+
+/* Big readout numeral, as used in the stat grid. */
+@utility readout {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.6rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--color-foreground);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }

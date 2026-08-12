@@ -21,6 +21,7 @@ export type Database = {
           categories: string[]
           created_at: string
           global_market_value_usd: number | null
+          growth_note: string | null
           hs4_code: string | null
           id: string
           name: string
@@ -38,6 +39,7 @@ export type Database = {
           categories?: string[]
           created_at?: string
           global_market_value_usd?: number | null
+          growth_note?: string | null
           hs4_code?: string | null
           id?: string
           name: string
@@ -55,6 +57,7 @@ export type Database = {
           categories?: string[]
           created_at?: string
           global_market_value_usd?: number | null
+          growth_note?: string | null
           hs4_code?: string | null
           id?: string
           name?: string

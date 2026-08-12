@@ -14,7 +14,7 @@ const COUNTRY_SUMMARY_COLUMNS =
   "slug, common_name, official_name, iso2, iso3, subregion, tier, flag_emoji, latitude, longitude, map_zoom, capital_city, largest_city, total_population, gdp_nominal_usd, gdp_per_capita_usd, minimum_wage_monthly_usd, life_expectancy_years, youth_under_30_pct, poverty_headcount_pct, adult_literacy_pct";
 
 const COMMODITY_COLUMNS =
-  "slug, name, hs4_code, rank, categories, african_export_value_usd, global_market_value_usd, africa_share_pct, reserves_value_usd, reserves_label, yoy_growth_pct";
+  "slug, name, hs4_code, rank, categories, african_export_value_usd, global_market_value_usd, africa_share_pct, reserves_value_usd, reserves_label, yoy_growth_pct, growth_note";
 
 function publicClient() {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
