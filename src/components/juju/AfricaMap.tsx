@@ -5,6 +5,8 @@ import type { CountrySummary, SubNode } from "@/lib/juju-types";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyMap = any;
 
+const GEOJSON_URL = "https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json";
+
 let loadPromise: Promise<void> | null = null;
 
 function loadGoogleMaps(): Promise<void> {
@@ -39,7 +41,10 @@ export type AfricaMapProps = {
   focus?: { lat: number; lng: number; zoom: number } | null;
   className?: string;
   mapTypeId?: "hybrid" | "satellite" | "terrain" | "roadmap";
-  interactiveTilt?: boolean;
+  /** ISO3 -> hex fill color for the choropleth layer. Empty object = no fill. */
+  fillByIso3?: Record<string, string>;
+  /** Slug -> 0..1 magnitude driving proportional bubble radius. */
+  bubbleScale?: Record<string, number>;
 };
 
 export function AfricaMap({
@@ -49,8 +54,9 @@ export function AfricaMap({
   subnodes,
   focus,
   className,
-  mapTypeId = "hybrid",
-  interactiveTilt = true,
+  mapTypeId = "roadmap",
+  fillByIso3,
+  bubbleScale,
 }: AfricaMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<AnyMap | null>(null);
@@ -58,9 +64,11 @@ export function AfricaMap({
   const subMarkersRef = useRef<AnyMap[]>([]);
   const infoRef = useRef<AnyMap | null>(null);
   const onSelectRef = useRef(onSelect);
+  const fillRef = useRef<Record<string, string>>({});
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
   onSelectRef.current = onSelect;
+  fillRef.current = fillByIso3 ?? {};
 
   // Boot the map once.
   useEffect(() => {
@@ -69,20 +77,36 @@ export function AfricaMap({
       .then(() => {
         if (cancelled || !containerRef.current) return;
         const google = (window as unknown as AnyMap)["google"];
-        mapRef.current = new google.maps.Map(containerRef.current, {
-          center: { lat: 1.5, lng: 19 },
+        const map = new google.maps.Map(containerRef.current, {
+          center: { lat: 3, lng: 19 },
           zoom: 3,
           minZoom: 2,
           mapTypeId,
-          tilt: interactiveTilt ? 45 : 0,
           streetViewControl: false,
-          fullscreenControl: true,
-          mapTypeControl: true,
-          rotateControl: true,
+          fullscreenControl: false,
+          mapTypeControl: false,
+          rotateControl: false,
+          zoomControl: true,
           gestureHandling: "greedy",
           backgroundColor: MAP_COLORS.outline,
+          styles: MAP_STYLE,
         });
+        mapRef.current = map;
         infoRef.current = new google.maps.InfoWindow();
+
+        map.data.setStyle((feature: AnyMap) => {
+          const iso3 = String(feature.getId() ?? "");
+          const color = fillRef.current[iso3];
+          return {
+            fillColor: color ?? MAP_COLORS.landless,
+            fillOpacity: color ? 0.72 : 0,
+            strokeColor: MAP_COLORS.borderline,
+            strokeWeight: 0.6,
+            clickable: false,
+          };
+        });
+        map.data.loadGeoJson(GEOJSON_URL, { idPropertyName: "id" });
+
         setStatus("ready");
       })
       .catch((error: Error) => {
@@ -95,7 +119,26 @@ export function AfricaMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Country markers.
+  // Re-tint the choropleth whenever the fill layer changes.
+  useEffect(() => {
+    if (status !== "ready" || !mapRef.current) return;
+    mapRef.current.data.forEach((feature: AnyMap) => {
+      mapRef.current.data.overrideStyle(feature, {});
+    });
+    mapRef.current.data.setStyle((feature: AnyMap) => {
+      const iso3 = String(feature.getId() ?? "");
+      const color = fillRef.current[iso3];
+      return {
+        fillColor: color ?? MAP_COLORS.landless,
+        fillOpacity: color ? 0.72 : 0,
+        strokeColor: MAP_COLORS.borderline,
+        strokeWeight: 0.6,
+        clickable: false,
+      };
+    });
+  }, [fillByIso3, status]);
+
+  // Country markers / proportional bubbles.
   useEffect(() => {
     if (status !== "ready" || !mapRef.current) return;
     const google = (window as unknown as AnyMap)["google"];
@@ -105,33 +148,30 @@ export function AfricaMap({
     countries.forEach((country) => {
       if (country.latitude === null || country.longitude === null) return;
       const isSelected = country.slug === selectedSlug;
+      const magnitude = bubbleScale?.[country.slug];
+      const scale =
+        magnitude === undefined ? (isSelected ? 9 : 5.5) : 5 + Math.sqrt(magnitude) * 20 + (isSelected ? 3 : 0);
+
       const marker = new google.maps.Marker({
         position: { lat: Number(country.latitude), lng: Number(country.longitude) },
         map: mapRef.current,
         title: country.common_name,
-        zIndex: isSelected ? 999 : 1,
+        zIndex: isSelected ? 999 : Math.round((magnitude ?? 0) * 100) + 1,
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
-          scale: isSelected ? 10 : 6,
+          scale,
           fillColor: MAP_COLORS[country.tier],
-          fillOpacity: 0.95,
-          strokeColor: MAP_COLORS.outline,
+          fillOpacity: 0.75,
+          strokeColor: isSelected ? MAP_COLORS.selected : MAP_COLORS.bubbleStroke,
           strokeWeight: isSelected ? 3 : 1.5,
         },
       });
       marker.addListener("click", () => {
-        infoRef.current?.setContent(
-          `<div style="font-family:'IBM Plex Sans',sans-serif;color:#141821;padding:2px 4px">
-            <strong>${country.flag_emoji ?? ""} ${country.common_name}</strong><br/>
-            <span style="font-size:12px">${country.subregion} · ${country.tier}</span>
-          </div>`,
-        );
-        infoRef.current?.open({ anchor: marker, map: mapRef.current });
         onSelectRef.current?.(country.slug);
       });
       markersRef.current.push(marker);
     });
-  }, [countries, selectedSlug, status]);
+  }, [countries, selectedSlug, status, bubbleScale]);
 
   // Sub-node (port / mine / hub) markers.
   useEffect(() => {
@@ -157,7 +197,7 @@ export function AfricaMap({
       });
       marker.addListener("click", () => {
         infoRef.current?.setContent(
-          `<div style="font-family:'IBM Plex Sans',sans-serif;color:#141821;padding:2px 4px">
+          `<div style="font-family:'IBM Plex Mono',monospace;color:#141821;padding:2px 4px">
             <strong>${node.name}</strong><br/><span style="font-size:12px">${node.category}</span>
           </div>`,
         );
@@ -179,9 +219,26 @@ export function AfricaMap({
       <div ref={containerRef} className="h-full w-full bg-secondary" />
       {status !== "ready" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <p className="eyebrow">{status === "loading" ? "Loading satellite tiles…" : "Map unavailable"}</p>
+          <p className="eyebrow">{status === "loading" ? "Loading map tiles…" : "Map unavailable"}</p>
         </div>
       )}
     </div>
   );
 }
+
+/**
+ * Dark basemap. Google Maps rasterizes its own tiles and cannot read CSS
+ * custom properties, so these hex values mirror the design tokens.
+ */
+const MAP_STYLE: AnyMap = [
+  { elementType: "geometry", stylers: [{ color: "#1a1a1d" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#8b8b93" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#121214" }] },
+  { featureType: "administrative", elementType: "geometry", stylers: [{ color: "#3a3a40" }] },
+  { featureType: "administrative.country", elementType: "labels.text.fill", stylers: [{ color: "#9c9ca4" }] },
+  { featureType: "poi", stylers: [{ visibility: "off" }] },
+  { featureType: "road", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", stylers: [{ visibility: "off" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0e0e10" }] },
+  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#55555c" }] },
+];
