@@ -1,147 +1,190 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { countriesQuery } from "@/lib/juju-queries";
+import { useSuspenseQuery, useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { AfricaMap } from "@/components/juju/AfricaMap";
+import { LayersPanel, type FillKey } from "@/components/juju/LayersPanel";
+import { BottomSheet } from "@/components/juju/BottomSheet";
+import { FilterChips } from "@/components/juju/FilterChips";
 import { TierBadge } from "@/components/juju/TierBadge";
-import { fmtCompact, fmtUsd } from "@/lib/juju-format";
-import { SUBREGIONS, TIERS, TIER_LABEL } from "@/lib/juju-types";
+import { MAP_COLORS, rampColor } from "@/components/juju/map-theme";
+import { countriesQuery, countryQuery } from "@/lib/juju-queries";
+import { fmtCompact, fmtMetric, fmtUsd } from "@/lib/juju-format";
+import { METRICS, SUBREGIONS, type MetricKey } from "@/lib/juju-types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Juju Africa — Search & Explore 54 African Nations" },
+      { title: "Juju Africa — Map of 54 African Economies" },
       {
         name: "description",
         content:
-          "Juju Africa is a discovery atlas: search structured data for all 54 African countries or explore the continent on a satellite map of economic nodes.",
+          "Navigate Africa on a dark data map: fill all 54 countries by GDP, population, literacy or poverty, and open ports, mines and export terminals node by node.",
       },
-      { property: "og:title", content: "Juju Africa — Search & Explore 54 African Nations" },
+      { property: "og:title", content: "Juju Africa — Map of 54 African Economies" },
       {
         property: "og:description",
-        content:
-          "Two modes of discovery: search 13 standardized indicators per nation, or navigate Africa on a satellite map of ports, mines and export hubs.",
+        content: "A continental data map: choropleth indicator fills, economic weight bubbles and export nodes.",
       },
     ],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(countriesQuery),
-  component: HomePage,
+  component: MapScreen,
 });
 
-function HomePage() {
+function MapScreen() {
   const { data: countries } = useSuspenseQuery(countriesQuery);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [subregion, setSubregion] = useState("all");
+  const [fill, setFill] = useState<FillKey>("tier");
+  const [layersOpen, setLayersOpen] = useState(false);
+  const [focus, setFocus] = useState<{ lat: number; lng: number; zoom: number } | null>(null);
 
-  const totalPop = countries.reduce((sum, c) => sum + Number(c.total_population ?? 0), 0);
-  const totalGdp = countries.reduce((sum, c) => sum + Number(c.gdp_nominal_usd ?? 0), 0);
-  const elite = countries.filter((c) => c.tier === "elite");
+  const visible = useMemo(
+    () => countries.filter((c) => subregion === "all" || c.subregion === subregion),
+    [countries, subregion],
+  );
+
+  const fillByIso3 = useMemo(() => {
+    const out: Record<string, string> = {};
+    if (fill === "none") return out;
+    if (fill === "tier") {
+      visible.forEach((c) => {
+        if (c.iso3) out[c.iso3] = MAP_COLORS[c.tier];
+      });
+      return out;
+    }
+    const key = fill as MetricKey;
+    const values = visible
+      .map((c) => Number(c[key] ?? Number.NaN))
+      .filter((v) => Number.isFinite(v))
+      .sort((a, b) => a - b);
+    if (values.length === 0) return out;
+    visible.forEach((c) => {
+      const value = Number(c[key] ?? Number.NaN);
+      if (!Number.isFinite(value) || !c.iso3) return;
+      const rank = values.filter((v) => v <= value).length / values.length;
+      out[c.iso3] = rampColor(rank);
+    });
+    return out;
+  }, [visible, fill]);
+
+  const bubbleScale = useMemo(() => {
+    const max = Math.max(...visible.map((c) => Number(c.gdp_nominal_usd ?? 0)), 1);
+    const out: Record<string, number> = {};
+    visible.forEach((c) => {
+      out[c.slug] = Number(c.gdp_nominal_usd ?? 0) / max;
+    });
+    return out;
+  }, [visible]);
+
+  const detail = useQuery({ ...countryQuery(selected ?? ""), enabled: Boolean(selected) });
+  const selectedCountry = countries.find((c) => c.slug === selected) ?? null;
+  const activeMetric = METRICS.find((m) => m.key === fill);
+
+  function focusCountry(slug: string) {
+    setSelected(slug);
+    const country = countries.find((c) => c.slug === slug);
+    if (country?.latitude != null && country.longitude != null) {
+      setFocus({
+        lat: Number(country.latitude),
+        lng: Number(country.longitude),
+        zoom: Number(country.map_zoom ?? 5),
+      });
+    }
+  }
 
   return (
-    <div>
-      <section className="border-b border-hairline px-4 py-16 sm:px-6 sm:py-24">
-        <div className="mx-auto max-w-7xl">
-          <p className="eyebrow">Discovery atlas · 54 sovereign nations</p>
-          <h1 className="mt-4 max-w-4xl text-4xl leading-[1.05] sm:text-6xl">
-            A single, structured way to read the whole of <span className="text-primary">Africa</span>.
-          </h1>
-          <p className="mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            Juju Africa runs on two modes. <strong className="text-foreground">Search</strong> compares 13
-            standardized indicators across every nation. <strong className="text-foreground">Explore</strong>{" "}
-            flies you over the continent on satellite imagery, node by node — ports, mines, terminals and
-            capitals.
-          </p>
+    <div className="absolute inset-0">
+      <AfricaMap
+        countries={visible}
+        selectedSlug={selected}
+        onSelect={focusCountry}
+        subnodes={detail.data?.subnodes ?? []}
+        focus={focus}
+        fillByIso3={fillByIso3}
+        bubbleScale={bubbleScale}
+        className="absolute inset-0"
+      />
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
-            <Link
-              to="/search"
-              className="group rounded-sm border border-hairline bg-card p-6 transition-colors hover:border-primary/60"
-            >
-              <p className="eyebrow">Mode 01</p>
-              <h2 className="mt-2 text-2xl text-foreground">Search</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Filter by sub-region, tier and indicator. Rank nations on GDP, population, literacy, minimum
-                wage, life expectancy and more.
-              </p>
-              <span className="mt-4 inline-block font-mono text-xs text-primary group-hover:underline">
-                Open search →
-              </span>
-            </Link>
-            <Link
-              to="/explore"
-              className="group rounded-sm border border-hairline bg-card p-6 transition-colors hover:border-primary/60"
-            >
-              <p className="eyebrow">Mode 02</p>
-              <h2 className="mt-2 text-2xl text-foreground">Explore</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Google-Earth-style navigation: satellite and terrain layers, tilt and rotation, country nodes
-                and their ranked economic assets.
-              </p>
-              <span className="mt-4 inline-block font-mono text-xs text-primary group-hover:underline">
-                Launch map →
-              </span>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <div className="absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-background/90 to-transparent px-3 py-2.5">
+        <FilterChips
+          chips={[
+            { value: "all", label: "All Africa" },
+            ...SUBREGIONS.map((s) => ({ value: s, label: s.replace(" Africa", "") })),
+          ]}
+          active={subregion}
+          onChange={setSubregion}
+          className="pr-24"
+        />
+      </div>
 
-      <section className="border-b border-hairline px-4 py-12 sm:px-6">
-        <dl className="mx-auto grid max-w-7xl grid-cols-2 gap-8 sm:grid-cols-4">
-          {[
-            { label: "Nations", value: String(countries.length) },
-            { label: "Combined population", value: fmtCompact(totalPop) },
-            { label: "Combined nominal GDP", value: fmtUsd(totalGdp) },
-            { label: "Sub-regions", value: String(SUBREGIONS.length) },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <dt className="eyebrow">{stat.label}</dt>
-              <dd className="numeral mt-2 text-2xl text-foreground sm:text-3xl">{stat.value}</dd>
+      <LayersPanel open={layersOpen} onOpenChange={setLayersOpen} fill={fill} onFillChange={setFill} />
+
+      <div className="pointer-events-none absolute bottom-3 left-3 z-10 border border-hairline bg-background/90 px-3 py-2 backdrop-blur">
+        <p className="eyebrow">Fill</p>
+        <p className="mt-0.5 text-xs text-foreground">
+          {fill === "none" ? "No fill" : fill === "tier" ? "Tier classification" : activeMetric?.label}
+        </p>
+        <p className="mt-1 text-[10px] text-muted-foreground">Bubble size = nominal GDP</p>
+      </div>
+
+      <BottomSheet open={Boolean(selectedCountry)} onClose={() => setSelected(null)}>
+        {selectedCountry && (
+          <div className="p-4">
+            <p className="eyebrow">{selectedCountry.subregion}</p>
+            <div className="mt-1 flex items-center gap-2">
+              <h2 className="text-lg text-foreground">
+                {selectedCountry.flag_emoji} {selectedCountry.common_name}
+              </h2>
+              <TierBadge tier={selectedCountry.tier} />
             </div>
-          ))}
-        </dl>
-      </section>
 
-      <section className="px-4 py-14 sm:px-6">
-        <div className="mx-auto max-w-7xl">
-          <p className="eyebrow">Tier architecture</p>
-          <h2 className="mt-3 text-2xl sm:text-3xl">Elite, Standard, Emerging</h2>
-          <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-            Every nation is classified by economic size, geographic advantage and relevance to global export
-            commodity supply chains.
-          </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {TIERS.map((tier) => {
-              const members = countries.filter((c) => c.tier === tier);
-              return (
-                <div key={tier} className="rounded-sm border border-hairline bg-card p-5">
-                  <TierBadge tier={tier} />
-                  <p className="numeral mt-3 text-3xl text-foreground">{members.length}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {TIER_LABEL[tier]} nations ·{" "}
-                    {Math.round((members.length / Math.max(countries.length, 1)) * 100)}% of the continent
-                  </p>
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+              <div>
+                <dt className="eyebrow">Population</dt>
+                <dd className="numeral text-foreground">{fmtCompact(selectedCountry.total_population)}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow">GDP</dt>
+                <dd className="numeral text-foreground">{fmtUsd(selectedCountry.gdp_nominal_usd)}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow">Capital</dt>
+                <dd className="text-foreground">{selectedCountry.capital_city ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow">Largest city</dt>
+                <dd className="text-foreground">{selectedCountry.largest_city ?? "—"}</dd>
+              </div>
+              {activeMetric && (
+                <div>
+                  <dt className="eyebrow">{activeMetric.label}</dt>
+                  <dd className="numeral text-primary">
+                    {fmtMetric(activeMetric.key, selectedCountry[activeMetric.key])}
+                  </dd>
                 </div>
-              );
-            })}
-          </div>
+              )}
+            </dl>
 
-          <h3 className="mt-12 text-xl">Elite nodes</h3>
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {elite.map((country) => (
-              <li key={country.slug}>
-                <Link
-                  to="/country/$slug"
-                  params={{ slug: country.slug }}
-                  className="block rounded-sm border border-hairline bg-card p-4 transition-colors hover:border-primary/60"
-                >
-                  <p className="text-sm text-foreground">
-                    {country.flag_emoji} {country.common_name}
-                  </p>
-                  <p className="numeral mt-1 text-xs text-muted-foreground">
-                    {fmtUsd(country.gdp_nominal_usd)} GDP
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+            {(detail.data?.subnodes?.length ?? 0) > 0 && (
+              <div className="mt-3 border-t border-hairline pt-3">
+                <p className="eyebrow">Economic nodes on map</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {detail.data?.subnodes.map((n) => n.name).join(" · ")}
+                </p>
+              </div>
+            )}
+
+            <Link
+              to="/country/$slug"
+              params={{ slug: selectedCountry.slug }}
+              className="mt-4 inline-block text-xs text-primary hover:underline"
+            >
+              Open full country record →
+            </Link>
+          </div>
+        )}
+      </BottomSheet>
     </div>
   );
 }
