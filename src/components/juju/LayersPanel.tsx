@@ -1,12 +1,9 @@
 import { Layers, X } from "lucide-react";
 import { METRICS, type MetricKey } from "@/lib/juju-types";
 
-export type FillKey = MetricKey | "export_value" | "tier" | "none";
+export type FillKey = MetricKey | "tier" | "none";
 
-const PROGRAMME: { key: FillKey; label: string }[] = [
-  { key: "export_value", label: "Headline export value" },
-  { key: "tier", label: "Tier classification" },
-];
+const PROGRAMME: { key: FillKey; label: string }[] = [{ key: "tier", label: "Tier classification" }];
 
 /** Floating "Layers" control plus the "Fill countries by" panel. */
 export function LayersPanel({
