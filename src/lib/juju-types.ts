@@ -139,15 +139,27 @@ export type MetricKey =
   | "poverty_headcount_pct"
   | "adult_literacy_pct";
 
-export const METRICS: { key: MetricKey; label: string; unit: "usd" | "count" | "pct" | "years" }[] = [
-  { key: "gdp_per_capita_usd", label: "GDP per capita", unit: "usd" },
-  { key: "gdp_nominal_usd", label: "GDP (nominal)", unit: "usd" },
-  { key: "total_population", label: "Population", unit: "count" },
-  { key: "life_expectancy_years", label: "Life expectancy", unit: "years" },
-  { key: "minimum_wage_monthly_usd", label: "Minimum wage / month", unit: "usd" },
-  { key: "youth_under_30_pct", label: "Under 30", unit: "pct" },
-  { key: "poverty_headcount_pct", label: "Poverty headcount", unit: "pct" },
-  { key: "adult_literacy_pct", label: "Adult literacy", unit: "pct" },
+export const METRICS: {
+  key: MetricKey;
+  label: string;
+  unit: "usd" | "count" | "pct" | "years";
+  vintage: string;
+  higherIsBetter: boolean;
+}[] = [
+  { key: "gdp_per_capita_usd", label: "GDP per capita", unit: "usd", vintage: "2024", higherIsBetter: true },
+  { key: "gdp_nominal_usd", label: "GDP (nominal)", unit: "usd", vintage: "2024", higherIsBetter: true },
+  { key: "total_population", label: "Population", unit: "count", vintage: "2024", higherIsBetter: true },
+  { key: "life_expectancy_years", label: "Life expectancy", unit: "years", vintage: "2023", higherIsBetter: true },
+  {
+    key: "minimum_wage_monthly_usd",
+    label: "Minimum wage / month",
+    unit: "usd",
+    vintage: "2024",
+    higherIsBetter: true,
+  },
+  { key: "youth_under_30_pct", label: "Under 30", unit: "pct", vintage: "2023", higherIsBetter: true },
+  { key: "poverty_headcount_pct", label: "Poverty headcount", unit: "pct", vintage: "2022", higherIsBetter: false },
+  { key: "adult_literacy_pct", label: "Adult literacy", unit: "pct", vintage: "2022", higherIsBetter: true },
 ];
 
 export const INDICATOR_DEFINITIONS: Record<string, string> = {
